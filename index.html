@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#f8d44c" />
+  <title>Power-Up Routines</title>
+  <style>
+    :root {
+      --bg: #fff8dc;
+      --card: #ffffff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --accent: #f8d44c;
+      --accent-dark: #d6a700;
+      --green: #3bb273;
+      --red: #ef4444;
+      --blue: #4f8cff;
+      --purple: #9b5de5;
+      --shadow: 0 12px 28px rgba(31, 41, 55, 0.16);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fff3a6 0, #fff8dc 42%, #e0f2fe 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 18px 0 28px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .title-block p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .theme-pill {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 12px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .score-card {
+      background: linear-gradient(145deg, #ffffff, #fff1a8);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-card::after {
+      content: "🦖";
+      position: absolute;
+      right: 14px;
+      top: 8px;
+      font-size: 4.4rem;
+      opacity: 0.17;
+      transform: rotate(10deg);
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .score-label {
+      font-size: 0.92rem;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .score {
+      font-size: 4rem;
+      font-weight: 950;
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    .next-reward {
+      text-align: right;
+      font-weight: 850;
+    }
+
+    .reward-name {
+      color: var(--green);
+      font-size: 1.05rem;
+    }
+
+    .progress-wrap {
+      margin-top: 14px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 999px;
+      height: 18px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+      border-radius: 999px;
+      transition: width 240ms ease;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      cursor: pointer;
+      user-select: none;
+      font-family: inherit;
+    }
+
+    .routine-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .routine-btn,
+    .small-btn,
+    .control-btn,
+    .step-btn {
+      border: 0;
+      border-radius: 20px;
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+    }
+
+    .routine-btn {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      padding: 16px;
+      min-height: 76px;
+    }
+
+    .routine-icon {
+      font-size: 2.2rem;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: #f3f4f6;
+    }
+
+    .routine-title {
+      font-size: 1.13rem;
+      line-height: 1.1;
+    }
+
+    .routine-subtitle {
+      color: var(--muted);
+      font-size: 0.87rem;
+      margin-top: 4px;
+      font-weight: 750;
+    }
+
+    .routine-points {
+      color: var(--green);
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .small-btn {
+      padding: 13px 12px;
+      font-size: 0.98rem;
+    }
+
+    .small-btn.negative {
+      color: var(--red);
+    }
+
+    .small-btn.secondary {
+      color: var(--blue);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.42);
+      display: none;
+      align-items: end;
+      justify-content: center;
+      padding: 12px;
+      z-index: 10;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card);
+      border-radius: 30px 30px 24px 24px;
+      padding: 18px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.25);
+      animation: rise 180ms ease-out;
+    }
+
+    @keyframes rise {
+      from { transform: translateY(22px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-title span:first-child {
+      font-size: 2rem;
+    }
+
+    .modal h2 {
+      margin: 0;
+      line-height: 1.08;
+      font-size: 1.45rem;
+    }
+
+    .close-btn {
+      border: 0;
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      background: #f3f4f6;
+      color: var(--ink);
+      font-size: 1.4rem;
+      font-weight: 900;
+    }
+
+    .script-box {
+      background: #f9fafb;
+      border-radius: 18px;
+      padding: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 12px;
+      border: 1px solid #eef2f7;
+    }
+
+    .steps {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .step-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      font-size: 1.05rem;
+      text-align: left;
+      background: #ffffff;
+      border: 2px solid transparent;
+    }
+
+    .step-btn.done {
+      border-color: var(--green);
+      background: #ecfdf5;
+    }
+
+    .step-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+    }
+
+    .step-btn.done .check {
+      background: var(--green);
+      color: white;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .control-btn {
+      padding: 15px 12px;
+      font-size: 1rem;
+    }
+
+    .control-btn.primary {
+      background: var(--green);
+      color: white;
+    }
+
+    .control-btn.warning {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .history-card {
+      margin-top: 16px;
+      background: rgba(255,255,255,0.72);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(31, 41, 55, 0.10);
+    }
+
+    .history-card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .log-list {
+      display: grid;
+      gap: 8px;
+      max-height: 190px;
+      overflow: auto;
+    }
+
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-weight: 750;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(107, 114, 128, 0.18);
+    }
+
+    .empty-log {
+      color: var(--muted);
+      font-weight: 750;
+      font-size: 0.92rem;
+    }
+
+    .settings {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .settings label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 850;
+    }
+
+    select,
+    input {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 13px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--ink);
+      background: white;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (min-width: 430px) {
+      .routine-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .routine-btn {
+        grid-template-columns: 1fr;
+        min-height: 150px;
+      }
+
+      .routine-points {
+        justify-self: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="title-block">
+        <h1>Power-Up<br>Routines</h1>
+        <p id="todayLabel">Today</p>
+      </div>
+      <button class="theme-pill" id="themeButton" type="button">🦖 Dinos</button>
+    </header>
+
+    <section class="score-card" aria-label="Today's points">
+      <div class="score-row">
+        <div>
+          <div class="score-label">Today’s points</div>
+          <div class="score" id="score">0</div>
+        </div>
+        <div class="next-reward">
+          <div>Next reward</div>
+          <div class="reward-name" id="nextReward">5: Small treat</div>
+        </div>
+      </div>
+      <div class="progress-wrap" aria-hidden="true">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <button class="small-btn secondary" id="addCustom" type="button">+1 Custom Point</button>
+      <button class="small-btn negative" id="undoPoint" type="button">Undo Last</button>
+      <button class="small-btn" id="settingsButton" type="button">Rewards / Settings</button>
+      <button class="small-btn negative" id="resetDay" type="button">Reset Today</button>
+    </section>
+
+    <section class="routine-grid" id="routineGrid" aria-label="Routine buttons"></section>
+
+    <section class="history-card">
+      <h3>Today’s log</h3>
+      <div class="log-list" id="logList"></div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="routineModal" role="dialog" aria-modal="true" aria-labelledby="modalRoutineTitle">
+    <section class="modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span id="modalIcon">🦖</span>
+          <h2 id="modalRoutineTitle">Routine</h2>
+        </div>
+        <button class="close-btn" id="closeRoutine" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="script-box" id="scriptBox"></div>
+      <div class="steps" id="stepsList"></div>
+      <div class="modal-actions">
+        <button class="control-btn primary" id="completeRoutine" type="button">Complete Routine</button>
+        <button class="control-btn warning" id="safeBonus" type="button">+ Safe Body</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <section class="modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>⚙️</span>
+          <h2 id="settingsTitle">Settings</h2>
+        </div>
+        <button class="close-btn" id="closeSettings" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="settings">
+        <label for="themeSelect">Theme</label>
+        <select id="themeSelect">
+          <option value="dino">Dinos</option>
+          <option value="truck">Trucks</option>
+          <option value="creature">Creature Badges</option>
+        </select>
+
+        <label for="reward1">Reward at 5 points</label>
+        <input id="reward1" value="Small treat" />
+
+        <label for="reward2">Reward at 10 points</label>
+        <input id="reward2" value="Pick activity" />
+
+        <label for="reward3">Reward at 15 points</label>
+        <input id="reward3" value="Prize box" />
+
+        <label for="reward4">Reward at 25 points</label>
+        <input id="reward4" value="Bigger toy" />
+
+        <button class="control-btn primary" id="saveSettings" type="button">Save Settings</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "powerUpRoutines.v1";
+
+    const THEMES = {
+      dino: {
+        label: "🦖 Dinos",
+        icons: ["🦖", "🦕", "🥚", "🌋", "🦴", "⭐"],
+        bg: "radial-gradient(circle at top, #fff3a6 0, #fff8dc 42%, #e0f2fe 100%)"
+      },
+      truck: {
+        label: "🚚 Trucks",
+        icons: ["🚚", "🚛", "🚜", "🛻", "🏁", "⭐"],
+        bg: "radial-gradient(circle at top, #dbeafe 0, #eef6ff 44%, #fef3c7 100%)"
+      },
+      creature: {
+        label: "⭐ Badges",
+        icons: ["⭐", "⚡", "🔥", "💧", "🌿", "🏆"],
+        bg: "radial-gradient(circle at top, #ede9fe 0, #fff7ed 45%, #dbeafe 100%)"
+      }
+    };
+
+    const ROUTINES = [
+      {
+        id: "morning",
+        title: "Morning Power-Up",
+        subtitle: "Potty, teeth, clothes",
+        iconIndex: 0,
+        script: "First potty, then teeth, then clothes. Then you earn your Morning Power-Up.",
+        steps: [
+          { id: "potty", label: "Potty", points: 1 },
+          { id: "teeth", label: "Brush teeth", points: 1 },
+          { id: "clothes", label: "Clothes on", points: 1 }
+        ],
+        bonus: 2
+      },
+      {
+        id: "blastoff",
+        title: "Blast-Off",
+        subtitle: "Potty, shoes, leave",
+        iconIndex: 1,
+        script: "Blast-off time. First potty, then shoes, then car.",
+        steps: [
+          { id: "potty", label: "Potty before leaving", points: 2 },
+          { id: "ready", label: "Shoes / jacket", points: 1 },
+          { id: "leave", label: "Walk to car / leave", points: 1 }
+        ],
+        bonus: 1
+      },
+      {
+        id: "food",
+        title: "Food Time",
+        subtitle: "Clean hands, then food",
+        iconIndex: 2,
+        script: "Clean hands, then food.",
+        steps: [
+          { id: "sink", label: "Go to sink", points: 1 },
+          { id: "wash", label: "Wash hands", points: 1 },
+          { id: "table", label: "Come to table", points: 1 }
+        ],
+        bonus: 0
+      },
+      {
+        id: "bedtime",
+        title: "Night Power-Down",
+        subtitle: "Potty, teeth, PJs, bed",
+        iconIndex: 3,
+        script: "Night Power-Down: potty, teeth, pajamas, bed.",
+        steps: [
+          { id: "potty", label: "Potty", points: 1 },
+          { id: "teeth", label: "Brush teeth", points: 1 },
+          { id: "pjs", label: "Pajamas on", points: 1 },
+          { id: "bed", label: "Into bed", points: 1 }
+        ],
+        bonus: 2
+      },
+      {
+        id: "safeBody",
+        title: "Safe Body",
+        subtitle: "Mad but safe",
+        iconIndex: 4,
+        script: "Safe body first. Hands and toys stay safe.",
+        steps: [
+          { id: "hands", label: "Safe hands", points: 2 },
+          { id: "toys", label: "No throwing", points: 2 },
+          { id: "calm", label: "Used calm-down tool", points: 1 }
+        ],
+        bonus: 0
+      },
+      {
+        id: "repair",
+        title: "Repair Point",
+        subtitle: "Fix after a hard moment",
+        iconIndex: 5,
+        script: "We repair, then we move on.",
+        steps: [
+          { id: "pickup", label: "Picked up toy", points: 1 },
+          { id: "check", label: "Checked on person", points: 1 },
+          { id: "gentle", label: "Gentle hands", points: 1 },
+          { id: "fix", label: "Helped fix it", points: 1 }
+        ],
+        bonus: 0
+      }
+    ];
+
+    const defaultState = {
+      date: todayKey(),
+      points: 0,
+      log: [],
+      theme: "dino",
+      rewards: [
+        { points: 5, label: "Small treat" },
+        { points: 10, label: "Pick activity" },
+        { points: 15, label: "Prize box" },
+        { points: 25, label: "Bigger toy" }
+      ]
+    };
+
+    let state = loadState();
+    let activeRoutine = null;
+    let activeStepIds = new Set();
+
+    const els = {
+      todayLabel: document.getElementById("todayLabel"),
+      score: document.getElementById("score"),
+      nextReward: document.getElementById("nextReward"),
+      progressBar: document.getElementById("progressBar"),
+      routineGrid: document.getElementById("routineGrid"),
+      logList: document.getElementById("logList"),
+      themeButton: document.getElementById("themeButton"),
+      routineModal: document.getElementById("routineModal"),
+      modalIcon: document.getElementById("modalIcon"),
+      modalRoutineTitle: document.getElementById("modalRoutineTitle"),
+      scriptBox: document.getElementById("scriptBox"),
+      stepsList: document.getElementById("stepsList"),
+      closeRoutine: document.getElementById("closeRoutine"),
+      completeRoutine: document.getElementById("completeRoutine"),
+      safeBonus: document.getElementById("safeBonus"),
+      addCustom: document.getElementById("addCustom"),
+      undoPoint: document.getElementById("undoPoint"),
+      resetDay: document.getElementById("resetDay"),
+      settingsButton: document.getElementById("settingsButton"),
+      settingsModal: document.getElementById("settingsModal"),
+      closeSettings: document.getElementById("closeSettings"),
+      themeSelect: document.getElementById("themeSelect"),
+      reward1: document.getElementById("reward1"),
+      reward2: document.getElementById("reward2"),
+      reward3: document.getElementById("reward3"),
+      reward4: document.getElementById("reward4"),
+      saveSettings: document.getElementById("saveSettings")
+    };
+
+    init();
+
+    function init() {
+      rolloverIfNeeded();
+      render();
+      bindEvents();
+    }
+
+    function bindEvents() {
+      els.closeRoutine.addEventListener("click", closeRoutineModal);
+      els.routineModal.addEventListener("click", (event) => {
+        if (event.target === els.routineModal) closeRoutineModal();
+      });
+
+      els.completeRoutine.addEventListener("click", completeActiveRoutine);
+      els.safeBonus.addEventListener("click", () => {
+        addPoints(2, "Safe body bonus");
+        closeRoutineModal();
+      });
+
+      els.addCustom.addEventListener("click", () => addPoints(1, "Custom point"));
+      els.undoPoint.addEventListener("click", undoLast);
+      els.resetDay.addEventListener("click", resetToday);
+
+      els.settingsButton.addEventListener("click", openSettings);
+      els.closeSettings.addEventListener("click", closeSettings);
+      els.settingsModal.addEventListener("click", (event) => {
+        if (event.target === els.settingsModal) closeSettings();
+      });
+      els.saveSettings.addEventListener("click", saveSettings);
+      els.themeButton.addEventListener("click", cycleTheme);
+    }
+
+    function render() {
+      const theme = THEMES[state.theme] || THEMES.dino;
+      document.body.style.background = theme.bg;
+      els.themeButton.textContent = theme.label;
+      els.todayLabel.textContent = formatToday();
+      els.score.textContent = state.points;
+
+      const next = getNextReward();
+      if (next) {
+        els.nextReward.textContent = `${next.points}: ${next.label}`;
+        const prevTier = getPreviousTier(next.points);
+        const range = next.points - prevTier;
+        const earnedInRange = Math.max(0, state.points - prevTier);
+        els.progressBar.style.width = `${Math.min(100, (earnedInRange / range) * 100)}%`;
+      } else {
+        els.nextReward.textContent = "All rewards earned";
+        els.progressBar.style.width = "100%";
+      }
+
+      renderRoutines(theme);
+      renderLog();
+    }
+
+    function renderRoutines(theme) {
+      els.routineGrid.innerHTML = "";
+      ROUTINES.forEach((routine) => {
+        const total = routine.steps.reduce((sum, step) => sum + step.points, 0) + routine.bonus;
+        const button = document.createElement("button");
+        button.className = "routine-btn";
+        button.type = "button";
+        button.innerHTML = `
+          <div class="routine-icon">${theme.icons[routine.iconIndex] || "⭐"}</div>
+          <div>
+            <div class="routine-title">${routine.title}</div>
+            <div class="routine-subtitle">${routine.subtitle}</div>
+          </div>
+          <div class="routine-points">+${total}</div>
+        `;
+        button.addEventListener("click", () => openRoutine(routine.id));
+        els.routineGrid.appendChild(button);
+      });
+    }
+
+    function renderLog() {
+      els.logList.innerHTML = "";
+      if (!state.log.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-log";
+        empty.textContent = "No points yet today.";
+        els.logList.appendChild(empty);
+        return;
+      }
+
+      [...state.log].reverse().forEach((entry) => {
+        const item = document.createElement("div");
+        item.className = "log-item";
+        item.innerHTML = `<span>${entry.label}</span><span>+${entry.points} · ${entry.time}</span>`;
+        els.logList.appendChild(item);
+      });
+    }
+
+    function openRoutine(id) {
+      activeRoutine = ROUTINES.find((routine) => routine.id === id);
+      activeStepIds = new Set();
+      if (!activeRoutine) return;
+
+      const theme = THEMES[state.theme] || THEMES.dino;
+      els.modalIcon.textContent = theme.icons[activeRoutine.iconIndex] || "⭐";
+      els.modalRoutineTitle.textContent = activeRoutine.title;
+      els.scriptBox.textContent = activeRoutine.script;
+      renderSteps();
+      els.routineModal.classList.add("open");
+    }
+
+    function renderSteps() {
+      els.stepsList.innerHTML = "";
+      activeRoutine.steps.forEach((step) => {
+        const done = activeStepIds.has(step.id);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `step-btn ${done ? "done" : ""}`;
+        button.innerHTML = `
+          <span class="step-name"><span class="check">${done ? "✓" : ""}</span>${step.label}</span>
+          <span>+${step.points}</span>
+        `;
+        button.addEventListener("click", () => toggleStep(step.id));
+        els.stepsList.appendChild(button);
+      });
+    }
+
+    function toggleStep(stepId) {
+      if (activeStepIds.has(stepId)) activeStepIds.delete(stepId);
+      else activeStepIds.add(stepId);
+      renderSteps();
+    }
+
+    function completeActiveRoutine() {
+      if (!activeRoutine) return;
+      const selectedSteps = activeRoutine.steps.filter((step) => activeStepIds.has(step.id));
+      const stepPoints = selectedSteps.reduce((sum, step) => sum + step.points, 0);
+      const allStepsDone = selectedSteps.length === activeRoutine.steps.length;
+      const bonus = allStepsDone ? activeRoutine.bonus : 0;
+      const total = stepPoints + bonus;
+
+      if (total <= 0) {
+        closeRoutineModal();
+        return;
+      }
+
+      const label = allStepsDone
+        ? `${activeRoutine.title} complete`
+        : `${activeRoutine.title}: ${selectedSteps.map((s) => s.label).join(", ")}`;
+
+      addPoints(total, label);
+      closeRoutineModal();
+    }
+
+    function closeRoutineModal() {
+      els.routineModal.classList.remove("open");
+      activeRoutine = null;
+      activeStepIds = new Set();
+    }
+
+    function addPoints(points, label) {
+      rolloverIfNeeded();
+      state.points += points;
+      state.log.push({ points, label, time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) });
+      saveState();
+      render();
+    }
+
+    function undoLast() {
+      if (!state.log.length) return;
+      const last = state.log.pop();
+      state.points = Math.max(0, state.points - last.points);
+      saveState();
+      render();
+    }
+
+    function resetToday() {
+      const ok = confirm("Reset today's points and log?");
+      if (!ok) return;
+      state.points = 0;
+      state.log = [];
+      state.date = todayKey();
+      saveState();
+      render();
+    }
+
+    function openSettings() {
+      els.themeSelect.value = state.theme;
+      els.reward1.value = state.rewards[0]?.label || "Small treat";
+      els.reward2.value = state.rewards[1]?.label || "Pick activity";
+      els.reward3.value = state.rewards[2]?.label || "Prize box";
+      els.reward4.value = state.rewards[3]?.label || "Bigger toy";
+      els.settingsModal.classList.add("open");
+    }
+
+    function closeSettings() {
+      els.settingsModal.classList.remove("open");
+    }
+
+    function saveSettings() {
+      state.theme = els.themeSelect.value;
+      state.rewards = [
+        { points: 5, label: els.reward1.value.trim() || "Small treat" },
+        { points: 10, label: els.reward2.value.trim() || "Pick activity" },
+        { points: 15, label: els.reward3.value.trim() || "Prize box" },
+        { points: 25, label: els.reward4.value.trim() || "Bigger toy" }
+      ];
+      saveState();
+      closeSettings();
+      render();
+    }
+
+    function cycleTheme() {
+      const keys = Object.keys(THEMES);
+      const currentIndex = keys.indexOf(state.theme);
+      state.theme = keys[(currentIndex + 1) % keys.length];
+      saveState();
+      render();
+    }
+
+    function getNextReward() {
+      return state.rewards.find((reward) => state.points < reward.points);
+    }
+
+    function getPreviousTier(nextPoints) {
+      const previous = state.rewards
+        .filter((reward) => reward.points < nextPoints)
+        .map((reward) => reward.points);
+      return previous.length ? Math.max(...previous) : 0;
+    }
+
+    function rolloverIfNeeded() {
+      const today = todayKey();
+      if (state.date !== today) {
+        state.date = today;
+        state.points = 0;
+        state.log = [];
+        saveState();
+      }
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!saved) return structuredClone(defaultState);
+        return {
+          ...structuredClone(defaultState),
+          ...saved,
+          rewards: saved.rewards?.length ? saved.rewards : structuredClone(defaultState.rewards),
+          log: Array.isArray(saved.log) ? saved.log : []
+        };
+      } catch (error) {
+        return structuredClone(defaultState);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function todayKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    }
+
+    function formatToday() {
+      return new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+    }
+  </script>
+</body>
+</html>

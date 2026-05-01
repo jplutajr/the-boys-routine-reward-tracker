@@ -367,6 +367,11 @@
       color: #c2410c;
     }
 
+    .control-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
     .history-card {
       margin-top: 16px;
       background: rgba(255,255,255,0.72);
@@ -710,7 +715,8 @@
       els.completeRoutine.addEventListener("click", completeActiveRoutine);
       els.safeBonus.addEventListener("click", () => {
         addPoints(2, "Safe body bonus");
-        closeRoutineModal();
+        els.safeBonus.textContent = "✓ Safe Body Added";
+        els.safeBonus.disabled = true;
       });
 
       els.addCustom.addEventListener("click", () => addPoints(1, "Custom point"));
@@ -790,6 +796,8 @@
     function openRoutine(id) {
       activeRoutine = ROUTINES.find((routine) => routine.id === id);
       activeStepIds = new Set();
+      els.safeBonus.textContent = "+ Safe Body";
+      els.safeBonus.disabled = false;
       if (!activeRoutine) return;
 
       const theme = THEMES[state.theme] || THEMES.dino;

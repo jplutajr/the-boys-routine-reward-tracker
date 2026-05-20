@@ -230,6 +230,7 @@ let activeStepIds=new Set();
 let ignoreCloudUntil=0;
 let pendingEventIds=new Set();
 let actionInFlight=false;
+let suppressLowerUntil=0;
 
 const $=id=>document.getElementById(id);
 const els={
@@ -515,11 +516,10 @@ function syncRoutineProgressToCloud(child=state.activeChild){
     routineProgress:JSON.stringify(currentChildState.routineProgress||{}),
     parent:PARENT_NAME,
     eventId
-  }).then(cloud=>{
-    if(cloud&&cloud.ok){
-      applyCloudState(cloud);
-    }
   }).catch(()=>{});
+  // Do not apply the response from a progress-only save.
+  // That response can arrive before the point-award request finishes and briefly overwrite the screen with an older point total.
+
 }
 
 function finishActiveTask(){
@@ -571,6 +571,7 @@ function addPoints(points,label,routine=""){
   saveState();
   render();
 
+  suppressLowerUntil=Date.now()+20000;
   ignoreCloudUntil=Date.now()+12000;
   cloudRequest("add",{
     child:state.activeChild,
@@ -776,8 +777,14 @@ function applyCloudState(cloud){
   if(cloud.children){
     Object.keys(cloud.children).forEach(child=>{
       if(state.children[child]){
-        state.children[child].points=Number(cloud.children[child].points||0);
-        state.children[child].log=Array.isArray(cloud.children[child].log)?cloud.children[child].log:[];
+        const incomingPoints=Number(cloud.children[child].points||0);
+        const currentPoints=Number(state.children[child].points||0);
+        const protectOptimisticTotal=Date.now()<suppressLowerUntil && incomingPoints<currentPoints;
+
+        if(!protectOptimisticTotal){
+          state.children[child].points=incomingPoints;
+          state.children[child].log=Array.isArray(cloud.children[child].log)?cloud.children[child].log:[];
+        }
         if(cloud.children[child].theme&&THEMES[cloud.children[child].theme]) state.children[child].theme=cloud.children[child].theme;
         if(Array.isArray(cloud.children[child].rewards)&&cloud.children[child].rewards.length) state.children[child].rewards=cloud.children[child].rewards;
         if(cloud.children[child].activityPoints&&typeof cloud.children[child].activityPoints==="object") state.children[child].activityPoints=cloud.children[child].activityPoints;
